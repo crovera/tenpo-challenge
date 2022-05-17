@@ -1,9 +1,7 @@
 package com.tenpo.challenge.user;
 
-import com.tenpo.challenge.security.EncodingConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,7 +27,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void loadUserByUsername_Found() {
+    void loadUserByUsername_found() {
         User user = mock(User.class);
         when(user.getUsername()).thenReturn(USERNAME);
         when(user.getPassword()).thenReturn(PASSWORD);
@@ -42,7 +40,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void loadUserByUsername_NotFound() {
+    void loadUserByUsername_notFound() {
         when(userRepository.findByUsername(USERNAME)).thenReturn(null);
 
         Exception exception = assertThrows(UsernameNotFoundException.class,
@@ -52,7 +50,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void save_Saved() throws UserExistsException {
+    void save_success() throws UserExistsException {
         User user = mock(User.class);
         when(user.getUsername()).thenReturn(USERNAME);
         when(user.getPassword()).thenReturn(PASSWORD);
@@ -72,7 +70,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void save_AlreadySaved() {
+    void save_alreadyExists() {
         User user = mock(User.class);
         when(user.getUsername()).thenReturn(USERNAME);
         when(user.getPassword()).thenReturn(PASSWORD);
