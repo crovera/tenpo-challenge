@@ -1,5 +1,7 @@
 package com.tenpo.challenge.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tenpo.challenge.session.*;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -21,6 +24,8 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
+    private final SessionCacheService sessionCacheService;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -41,9 +46,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.sessionManagement().sessionCreationPolicy(STATELESS);
 
+        http.exceptionHandling().authenticationEntryPoint(new SessionAuthenticationEntryPoint(objectMapper));
+
+        http.addFilterBefore(new SessionAuthorizationFilter(sessionCacheService, objectMapper),
+                UsernamePasswordAuthenticationFilter.class);
+
+        SessionAuthenticationFilter authenticationFilter =
+                new SessionAuthenticationFilter(authenticationManagerBean(), sessionCacheService, objectMapper);
+        authenticationFilter.setFilterProcessesUrl("/api/login");
+        http.addFilter(authenticationFilter);
+
+        http.logout()
+                .logoutUrl("/api/logout")
+                .logoutSuccessHandler(new SessionLogoutSuccessHandler(sessionCacheService, objectMapper))
+                .permitAll();
+
         http.authorizeRequests()
                 .antMatchers(POST, "/api/users").permitAll()
-                .antMatchers(GET, "/api/calc/**").permitAll()
+                .antMatchers(GET, "/api/calc/**").hasAnyAuthority("ROLE_USER")
                 .antMatchers(GET, "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .anyRequest().authenticated();
     }
