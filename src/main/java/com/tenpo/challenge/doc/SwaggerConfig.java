@@ -1,4 +1,4 @@
-package com.tenpo.challenge.swagger;
+package com.tenpo.challenge.doc;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;

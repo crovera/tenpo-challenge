@@ -1,4 +1,4 @@
-package com.tenpo.challenge.exception;
+package com.tenpo.challenge.shared;
 
 import java.util.List;
 

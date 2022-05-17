@@ -53,6 +53,16 @@
             <artifactId>springdoc-openapi-ui</artifactId>
             <version>1.6.8</version>
         </dependency>
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.19.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+            <version>3.10.0</version>
+        </dependency>
     </dependencies>
 
     <build>
