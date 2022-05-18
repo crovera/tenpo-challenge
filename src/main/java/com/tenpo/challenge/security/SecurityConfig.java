@@ -1,6 +1,8 @@
 package com.tenpo.challenge.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tenpo.challenge.audit.AuditFilter;
+import com.tenpo.challenge.audit.AuditService;
 import com.tenpo.challenge.session.*;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -23,6 +26,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @AllArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
+    private final AuditService auditService;
     private final PasswordEncoder passwordEncoder;
     private final SessionCacheService sessionCacheService;
     private final ObjectMapper objectMapper;
@@ -61,9 +65,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logoutSuccessHandler(new SessionLogoutSuccessHandler(sessionCacheService, objectMapper))
                 .permitAll();
 
+        http.addFilterBefore(new AuditFilter(auditService, objectMapper), LogoutFilter.class);
+
         http.authorizeRequests()
                 .antMatchers(POST, "/api/users").permitAll()
                 .antMatchers(GET, "/api/calc/**").hasAnyAuthority("ROLE_USER")
+                .antMatchers(GET, "/api/audit/**").hasAnyAuthority("ROLE_USER")
                 .antMatchers(GET, "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .anyRequest().authenticated();
     }
