@@ -2,6 +2,7 @@ package com.tenpo.challenge.exception;
 
 import com.tenpo.challenge.shared.APIError;
 import com.tenpo.challenge.user.UserExistsException;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,17 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull HttpHeaders headers,
             @NonNull HttpStatus status,
             @NonNull WebRequest request) {
-        APIError error = new APIError("Missing parameters", ex.getLocalizedMessage());
+        APIError error = new APIError("Missing parameter", ex.getLocalizedMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleTypeMismatch(
+            TypeMismatchException ex,
+            @NonNull HttpHeaders headers,
+            @NonNull HttpStatus status,
+            @NonNull WebRequest request) {
+        APIError error = new APIError("Wrong parameter", ex.getLocalizedMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
