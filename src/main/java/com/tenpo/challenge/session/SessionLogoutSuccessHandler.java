@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -22,7 +21,7 @@ public class SessionLogoutSuccessHandler implements LogoutSuccessHandler {
     private final ObjectMapper objectMapper;
 
     @Override
-    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         String authorizationHeader = request.getHeader(AUTHORIZATION);
         response.setContentType(APPLICATION_JSON_VALUE);
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {

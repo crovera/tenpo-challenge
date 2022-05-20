@@ -17,7 +17,7 @@ public class AuditServiceTest {
     private AuditRepository auditRepository;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         auditRepository = mock(AuditRepository.class);
         auditService = new AuditService(auditRepository);
     }
