@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  app:
+    image: 'crovera/tenpo:latest'
+    build:
+      context: .
+    container_name: app
+    depends_on:
+      - postgres
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/tenpo
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - JWT_SECRET=8dac27838137bc73f8d8d18382a41347f0025849c4e500025330e77908c97c77
+    ports:
+      - 8080:8080
+  postgres:
+    image: 'postgres:14.3-alpine'
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=tenpo
