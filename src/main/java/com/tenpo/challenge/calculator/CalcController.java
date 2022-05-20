@@ -1,6 +1,7 @@
 package com.tenpo.challenge.calculator;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,8 @@ public class CalcController {
     private final CalcService calcService;
 
     @GetMapping("/add")
-    @Operation(summary = "Addition")
+    @Operation(summary = "Addition", security = { @SecurityRequirement(name = "bearer-auth") })
     public ResponseEntity<Result> add(
-            @RequestHeader(value = "Authorization") String headerAuth,
             @RequestParam() @NotEmpty double numberA,
             @RequestParam() @NotEmpty double numberB
     ) {
