@@ -64,7 +64,7 @@ cd tenpo-challenge
 ```
 docker-compose up
 ```
-5. See the documentation below to know how to use it.
+4. See the documentation below to know how to use it.
 
 ### How to use
 
