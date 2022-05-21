@@ -8,11 +8,15 @@ services:
     container_name: app
     depends_on:
       - postgres
+      - redis
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/tenpo
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_REDIS_DATABASE=0
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
       - JWT_SECRET=8dac27838137bc73f8d8d18382a41347f0025849c4e500025330e77908c97c77
     ports:
       - 8080:8080
@@ -23,3 +27,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=tenpo
+  redis:
+    image: 'redis:7.0.0-alpine'
+    container_name: redis
