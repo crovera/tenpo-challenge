@@ -1,37 +1,32 @@
 package com.tenpo.challenge.session;
 
-import org.ehcache.Cache;
-import org.ehcache.CacheManager;
-import org.ehcache.config.CacheConfiguration;
-import org.ehcache.config.builders.CacheConfigurationBuilder;
-import org.ehcache.config.builders.ExpiryPolicyBuilder;
-import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import static com.tenpo.challenge.session.SessionConfig.SESSION_DURATION;
 
 @Service
 public class SessionCacheService {
-    private final Cache<String, String> sessions;
+    private final RedisTemplate<String, String> activeSessions;
 
-    public SessionCacheService(CacheManager cacheManager) {
-        CacheConfiguration<String, String> cacheConf = CacheConfigurationBuilder
-                .newCacheConfigurationBuilder(String.class, String.class, ResourcePoolsBuilder.heap(300000))
-                .withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(SESSION_DURATION))
-                .build();
+    public SessionCacheService(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(connectionFactory);
+        redisTemplate.afterPropertiesSet();
 
-        sessions = cacheManager.createCache("sessions", cacheConf);
+        activeSessions = redisTemplate;
     }
 
     public void add(String token, String username) {
-        sessions.put(token, username);
+        activeSessions.opsForValue().set(token, username, SESSION_DURATION);
     }
 
     public void remove(String token) {
-        sessions.remove(token);
+        activeSessions.delete(token);
     }
 
     public boolean isPresent(String token) {
-        return sessions.containsKey(token);
+        return activeSessions.opsForValue().get(token) != null;
     }
 }

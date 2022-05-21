@@ -8,6 +8,7 @@ _____________
 - Spring Boot
 - Maven
 - Postgres
+- Redis
 - Docker
 - JWT
 - OpenAPI
@@ -29,7 +30,25 @@ along with the username, method, time and response code. This info can be access
 - **exception:** Custom exception handler.
 - **security:** Security related. In this case encoder and web security configs.
 - **doc:** Project auto documentation. In this case swagger configs.
-- **cache:** Cache related. In this case ehcache configs.
+
+### Why Redis?
+
+JWT tokens are used to handle authentication and authorization, these tokens are stateless, therefore there isn't a way
+to invalidate a token when a user logs out. There are plenty of ways to mitigate this problem.
+
+My first approach was to use a local cache to save the tokens of the logged users, when a user logged out that token
+is deleted. This way I can reject any request with a still valid token if it is not in cache.
+
+This approach may work in development, but in a production environment where there is more than one instance running
+the same application, it is not possible to control which one will service which request and therefore there is no way
+to guarantee that the same instance will always respond to the same user.
+
+A solution to this could be to store the sessions in the postgres database, which can be accessed from every instance,
+however this can be really slow and very taxing for the database.
+
+To solve this it is possible to use a distributed cache, in this case I decided to use Redis, which provide a solid
+solution to persist data that can be accessed from multiple instances. Being an in-memory data store response times are
+fast, which is exactly what is needed to provide a good user experience.
 
 ### How to run
 
