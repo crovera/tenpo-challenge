@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tenpo.challenge.shared.APIError;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,6 +27,7 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
+@Slf4j
 @AllArgsConstructor
 public class SessionAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
@@ -39,6 +41,7 @@ public class SessionAuthenticationFilter extends UsernamePasswordAuthenticationF
         try {
             credentials = objectMapper.readValue(request.getInputStream(), Credentials.class);
         } catch (IOException e) {
+            log.error("Error getting login credentials: {}", e.getMessage());
             throw new SessionAuthenticationException(e.getMessage());
         }
 
@@ -60,6 +63,8 @@ public class SessionAuthenticationFilter extends UsernamePasswordAuthenticationF
 
         sessionCacheService.add(token, user.getUsername());
 
+        log.info("User {} successfully logged in", user.getUsername());
+
         response.setStatus(SC_OK);
         response.setContentType(APPLICATION_JSON_VALUE);
         objectMapper.writeValue(response.getOutputStream(), new Login(token));
@@ -67,6 +72,7 @@ public class SessionAuthenticationFilter extends UsernamePasswordAuthenticationF
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
+        log.error("User fail to log in: {}", failed.getMessage());
         response.setStatus(SC_UNAUTHORIZED);
         response.setContentType(APPLICATION_JSON_VALUE);
         APIError error = new APIError("Unauthorized", failed.getMessage());
