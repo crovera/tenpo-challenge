@@ -74,7 +74,7 @@ http://localhost:8080/swagger-ui.html
 2. Postman collection:  
 https://www.getpostman.com/collections/11ab08b51db95f54058e
 
-### Hot to rebuild from code
+### How to rebuild from code
 
 > Note that this requires you to have Java 18 and maven installed on your PC.
 
