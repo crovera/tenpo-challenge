@@ -64,7 +64,7 @@ cd tenpo-challenge
 ```
 docker-compose up
 ```
-4. See the documentation below to know how to use it.
+5. See the documentation below to know how to use it.
 
 ### How to use
 
@@ -73,3 +73,16 @@ http://localhost:8080/swagger-ui.html
 
 2. Postman collection:  
 https://www.getpostman.com/collections/11ab08b51db95f54058e
+
+### Hot to rebuild from code
+
+> Note that this requires you to have Java 18 and maven installed on your PC.
+
+1. Install dependencies
+```
+mvn clean install
+```
+2. Run docker compose rebuild.
+```
+docker-compose -f docker-compose-rebuild.yml up
+```

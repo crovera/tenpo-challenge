@@ -7,6 +7,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tenpo.challenge.shared.APIError;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -28,6 +29,7 @@ import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
+@Slf4j
 @AllArgsConstructor
 public class SessionAuthorizationFilter extends OncePerRequestFilter {
     private final SessionCacheService sessionCacheService;
@@ -43,19 +45,23 @@ public class SessionAuthorizationFilter extends OncePerRequestFilter {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
             try {
                 String token = authorizationHeader.substring("Bearer ".length());
+                JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET.getBytes())).build();
+                DecodedJWT decoded = verifier.verify(token);
+                String username = decoded.getSubject();
+                log.info("User {} is authorized", username);
                 if (sessionCacheService.isPresent(token)) {
-                    JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET.getBytes())).build();
-                    DecodedJWT decoded = verifier.verify(token);
-                    String username = decoded.getSubject();
                     String[] roles = decoded.getClaim(ROLES).asArray(String.class);
                     Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
                     stream(roles).forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(username, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                } else {
+                    log.info("User {} is logged out", username);
                 }
                 filterChain.doFilter(request, response);
             } catch (Exception exception) {
+                log.error("Authorization error: {}", exception.getMessage());
                 response.setStatus(SC_FORBIDDEN);
                 response.setContentType(APPLICATION_JSON_VALUE);
                 APIError error = new APIError("Forbidden", exception.getMessage());

@@ -1,8 +1,10 @@
 package com.tenpo.challenge.session;
 
+import com.auth0.jwt.JWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tenpo.challenge.shared.APIError;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
@@ -15,6 +17,7 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
+@Slf4j
 @AllArgsConstructor
 public class SessionLogoutSuccessHandler implements LogoutSuccessHandler {
     private final SessionCacheService sessionCacheService;
@@ -27,11 +30,14 @@ public class SessionLogoutSuccessHandler implements LogoutSuccessHandler {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
             String message;
             String token = authorizationHeader.substring("Bearer ".length());
+            String username = getUsernameFromToken(token);
             if (sessionCacheService.isPresent(token)) {
                 sessionCacheService.remove(token);
-                message = "User successfully logged out";
+                log.info("User {} successfully logged out", username);
+                message = String.format("User %s successfully logged out", username);
             } else {
-                message = "User was already logged out";
+                log.info("User {} successfully logged out", username);
+                message = String.format("User %s was already logged out", username);
             }
 
             response.setStatus(SC_OK);
@@ -40,6 +46,14 @@ public class SessionLogoutSuccessHandler implements LogoutSuccessHandler {
             response.setStatus(SC_BAD_REQUEST);
             APIError error = new APIError("Bad request", "Missing authorization header");
             objectMapper.writeValue(response.getOutputStream(), error);
+        }
+    }
+
+    private String getUsernameFromToken(String token) {
+        try {
+            return JWT.decode(token).getSubject();
+        } catch (Exception exception) {
+            return "Unknown";
         }
     }
 }
